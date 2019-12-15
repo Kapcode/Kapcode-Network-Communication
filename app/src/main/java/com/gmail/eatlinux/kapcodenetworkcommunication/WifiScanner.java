@@ -20,6 +20,7 @@ public class WifiScanner implements Runnable {
     public static final int GET_SIZE = 4;
     public static final int COPY = 5;
     public static volatile AtomicBoolean stopScanners = new AtomicBoolean(false);
+    public static volatile AtomicBoolean paused = new AtomicBoolean(false);
     private static List<Object[]> identifiedServersList = (List<Object[]>) Collections.synchronizedList(new ArrayList<Object[]>());//Object[3] String serverName,String ip, int port
     private int port,timeout;
     static volatile ExecutorService executorService = null;
@@ -128,7 +129,6 @@ public class WifiScanner implements Runnable {
                 //cpu usage evens out after a while but change is still needed to reduce network load. battery usage.
 
             } else {
-                if (client.ip.equals("192.168.0.5")) System.out.println("FAILED TEST DEBUG ip .5");
                 //connection failed...
                 //remove from list
                 removeIdentifiedServerFromListByAddress(client.ip, client.port);
@@ -153,7 +153,7 @@ public class WifiScanner implements Runnable {
 
     //blocks until scanning is complete.
     //use ip of this device to get set of ips to scan for servers
-    public static void startScanningIpRange(int debugCounter,String this_system_ip,int port,int threadCount,String systemName,String application,int timeout,WifiEventHandler eventHandler,boolean scanIndefinitely){//
+    public static void startScanningIpRange(String this_system_ip,int port,int threadCount,String systemName,String application,int timeout,WifiEventHandler eventHandler,boolean scanIndefinitely){//
             stopScanners.set(false);
             //parse ip
             //254 because 255-this device... //todo exclude router as well
@@ -190,13 +190,23 @@ public class WifiScanner implements Runnable {
                 //add each runnable //scanner to the que...
                 long startTime = System.currentTimeMillis();
                 for (Runnable runnable : runnableList) executorService.execute(runnable);
-                System.out.println("ALL TASKS STARTED!  " + debugCounter);
+                System.out.println("ALL TASKS STARTED! ");
                 //loop until all tasks are completed.  (BLOCK) until all tasks complete
                 while (!stopScanners.get()) {
                     if (tasksCountCompleted.get() >= tasksCountTotal) {
                         //tasks done,
-                        System.out.println("ALL TASKS COMPLETED! " + (System.currentTimeMillis() - startTime) + "   " + debugCounter);
+                        System.out.println("ALL TASKS COMPLETED! " + (System.currentTimeMillis() - startTime));
                         tasksCountCompleted.set(0);
+
+                        //block while paused
+                        while(paused.get()){
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                         break;
                     } else {
                         //sleep to avoid thrash
@@ -219,7 +229,7 @@ public class WifiScanner implements Runnable {
             executorService.shutdown();
             while (!executorService.isTerminated()) {
             }
-            System.out.println("Finished all scanner threads  " + debugCounter);
+            System.out.println("Finished all scanner threads");
             stopScanners.set(false);
 
     }

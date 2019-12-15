@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     final static WifiEventHandler eventHandler = new WifiEventHandler();
-    static int debugCounter = 0;
     static Thread startScannerThread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void startScan(){
         //new Thread // don't block UI thread. (Scanner process blocks.)
-        debugCounter++;
+
         startScannerThread= new Thread((new Runnable() {
             @Override
             public void run() {
@@ -26,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
                 //WifiScanner.shutDownNow();
                 //start a scanner... blocks! (scans all ip's on network except this_system_ip, ) //
                 try{
-                    WifiScanner.startScanningIpRange(debugCounter,"192.168.0.1",4006,127,"AndroidClient1ScannersName","demo",3000,eventHandler,true);
+                    WifiScanner.startScanningIpRange("192.168.0.1",4006,127,"AndroidClient1ScannersName","demo",3000,eventHandler,true);
 
 
                 }catch (java.util.concurrent.RejectedExecutionException e){
@@ -46,8 +45,14 @@ public class MainActivity extends AppCompatActivity {
                                             // WifiClient client1 = new WifiClient(server_ip,4006,WifiClient.DEFAULT_TIMEOUT,"Android_client1","demo",false,eventHandler);
             }
         }));
-        WifiScanner.waitForShutdown();
-        startScannerThread.start();
+
+        //if paused, un-pause
+        if(WifiScanner.executorService!=null){
+            WifiScanner.paused.set(false);
+        }else{//if null, create and start scan.
+            startScannerThread.start();
+        }
+
     }
     public void onResume(){
         //todo still getting oops..above print out java.util.concurrent.RejectedExecutionException
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onPause(){
         //System.out.println("STOPPING");
-        WifiScanner.shutDownNow();
+        WifiScanner.paused.set(true);
         //System.out.println("Stopped");
         super.onPause();
     }
