@@ -1,10 +1,8 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
-
-import java.util.ArrayList;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
     final static WifiEventHandler eventHandler = new WifiEventHandler();
@@ -16,26 +14,14 @@ public class MainActivity extends AppCompatActivity {
     }
     public void startScan(){
         //new Thread // don't block UI thread. (Scanner process blocks.)
-
         startScannerThread= new Thread((new Runnable() {
             @Override
             public void run() {
-
-                //shutdown scanner and wait for finish
-                //WifiScanner.shutDownNow();
-                //start a scanner... blocks! (scans all ip's on network except this_system_ip, ) //
                 try{
                     WifiScanner.startScanningIpRange("192.168.0.1",4006,127,"AndroidClient1ScannersName","demo",3000,eventHandler,true);
-
-
                 }catch (java.util.concurrent.RejectedExecutionException e){
-
-                    System.out.println("oops");
-                    startScan();
-
+                    e.printStackTrace();
                 }
-
-
                 //get first found server, connect to it with new client
                         //ArrayList<Object[]> listOfServers = WifiScanner.getCopyOfIdentifiedServersList();
                         //Object[] serverInfo = listOfServers.get(0);
@@ -45,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
                                             // WifiClient client1 = new WifiClient(server_ip,4006,WifiClient.DEFAULT_TIMEOUT,"Android_client1","demo",false,eventHandler);
             }
         }));
-
         //if paused, un-pause
         if(WifiScanner.executorService!=null){
             WifiScanner.paused.set(false);
@@ -55,18 +40,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void onResume(){
-        //todo still getting oops..above print out java.util.concurrent.RejectedExecutionException
         startScan();
         super.onResume();
     }
     public void onPause(){
-        //System.out.println("STOPPING");
         WifiScanner.paused.set(true);
-        //System.out.println("Stopped");
         super.onPause();
     }
     public void onStop(){
-        //WifiScanner.shutDownNow();
         super.onStop();
+    }
+
+
+
+    public void connectButtonOnClick(View view){
+        //get selected radio button, parse info, connect...
     }
 }

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -231,10 +230,11 @@ public class WifiScanner implements Runnable {
             }
             System.out.println("Finished all scanner threads");
             stopScanners.set(false);
+            executorService=null;
 
     }
-    //use on android onStop... will kill all threads,,
     public static void waitForShutdown(){
+        //todo... maybe join() the thread that the scanner is running on, pass it via an argument on scanIpRange()  ??  instead of this...
          try{
              while (!executorService.isTerminated()||stopScanners.get()) {
              }
@@ -243,6 +243,9 @@ public class WifiScanner implements Runnable {
             while(stopScanners.get()){}
         }
     }
+
+    //should only be running this when changing information, or are already connected to a server.
+    //should be using pause.set(true); if not wanting to kill all threads in pool, or change network scanning in.
     public static void shutDownNow(){
         System.out.println("STOPPING");
         stopScanners.set(true);
@@ -251,6 +254,7 @@ public class WifiScanner implements Runnable {
         }catch (NullPointerException e){
 
         }
+        //todo concurency errors.. not thread safe, and list might be set null during iteration!
         if(runnableList!=null)for(WifiScanner r: runnableList) {
             try {
                 r.socket.close();
