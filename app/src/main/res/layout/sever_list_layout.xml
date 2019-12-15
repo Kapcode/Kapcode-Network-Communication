@@ -26,23 +26,9 @@
         android:layout_height="match_parent">
 
         <RadioGroup
+            android:id="@+id/server_list_radiogroup"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/radioButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="TestServerName:192.168.255.255:4600" />
-
-            <RadioButton
-                android:id="@+id/radioButton2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TestServerName2:192.168.255.254:4600" />
-
-        </RadioGroup>
+            android:layout_height="wrap_content"/>
 
     </ScrollView>
 </LinearLayout>

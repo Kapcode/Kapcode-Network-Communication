@@ -1,19 +1,29 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.format.Formatter;
 import android.view.View;
+import android.widget.RadioGroup;
 
 public class MainActivity extends AppCompatActivity {
-    final static WifiEventHandler eventHandler = new WifiEventHandler();
+    final Handler handler=new Handler();
+    MyWifiEventHandler eventHandler;
     static Thread startScannerThread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //create event handler if null
+         if(eventHandler==null)eventHandler= new MyWifiEventHandler((RadioGroup)findViewById(R.id.server_list_radiogroup),handler);
     }
     public void startScan(){
         //new Thread // don't block UI thread. (Scanner process blocks.)
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
         startScannerThread= new Thread((new Runnable() {
             @Override
             public void run() {
@@ -56,4 +66,6 @@ public class MainActivity extends AppCompatActivity {
     public void connectButtonOnClick(View view){
         //get selected radio button, parse info, connect...
     }
+
+
 }

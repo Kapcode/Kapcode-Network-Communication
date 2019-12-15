@@ -18,6 +18,7 @@ public class WifiScanner implements Runnable {
     public static final int CLEAR = 3;
     public static final int GET_SIZE = 4;
     public static final int COPY = 5;
+    public static final int CONTAINS = 6;
     public static volatile AtomicBoolean stopScanners = new AtomicBoolean(false);
     public static volatile AtomicBoolean paused = new AtomicBoolean(false);
     private static List<Object[]> identifiedServersList = (List<Object[]>) Collections.synchronizedList(new ArrayList<Object[]>());//Object[3] String serverName,String ip, int port
@@ -73,6 +74,20 @@ public class WifiScanner implements Runnable {
                 ArrayList<Object[]> listCopy = new ArrayList<>();
                 listCopy.addAll(identifiedServersList);
                 return listCopy;
+            case CONTAINS:
+                //loop over list
+                //check if contains ip and port
+                for(Object[] arr: identifiedServersList){
+                    //0 = name
+                    //1 = ip
+                    //2 = port
+                    if(arr[1].equals(ip) && arr[2].equals(port)){
+                        return true;
+                    }
+                }
+                return false;
+
+
 
         }
         if(identifiedServersList.size()!=startSize)System.out.println("client: identified_servers= "+identifiedServersList.size());
@@ -83,6 +98,9 @@ public class WifiScanner implements Runnable {
     }
     public static void removeIdentifiedServerFromListByAddress(String ip,int port){
         accessIdentifiedServerList("",ip,port,REMOVE,null,null);
+    }
+    public static boolean identifiedServersListContains(String ip,int port){
+        return (boolean)accessIdentifiedServerList("",ip,port,CONTAINS,null,null);
     }
     public static int getIdentifiedServersListSize(){
         return (int) accessIdentifiedServerList(null,null,0,GET_SIZE,null,null);
@@ -130,7 +148,11 @@ public class WifiScanner implements Runnable {
             } else {
                 //connection failed...
                 //remove from list
-                removeIdentifiedServerFromListByAddress(client.ip, client.port);
+                if(identifiedServersListContains(client.ip,client.port)){
+                    eventHandler.scannerLostServer(client.ip,client.port);
+                    removeIdentifiedServerFromListByAddress(client.ip, client.port);
+                }
+
             }
             tasksCountCompleted.incrementAndGet();//this task is done
 

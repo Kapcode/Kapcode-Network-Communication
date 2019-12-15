@@ -101,5 +101,8 @@ public class WifiEventHandler {
     public void scannerFoundServer(WifiClient client){
         System.out.println(ANSI_GREEN + "SCANNER: Found server: " + client.serverName + ":" +client.ip+":"+client.port + ANSI_RESET);
     }
+    public void scannerLostServer(String ip,int port){
+        System.out.println(ANSI_YELLOW + "SCANNER: Lost server: " + ip+":"+port + ANSI_RESET);
+    }
 
 }
