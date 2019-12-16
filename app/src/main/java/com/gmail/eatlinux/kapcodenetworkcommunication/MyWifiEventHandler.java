@@ -44,5 +44,13 @@ public class MyWifiEventHandler extends WifiEventHandler {
         }});
     }
 
+    public void clientDisconnected(WifiClient client, Exception[] exceptions){
+        super.clientDisconnected(client,exceptions);
+        //set null, because connection is now dead.
+        MainActivity.wifiClient=null;
+        //un-pause scanner on client disconnected, only if not a ping.
+        if(!client.ping) WifiScanner.paused.set(false);
+    }
+
 
 }
