@@ -22,5 +22,5 @@
         android:layout_alignParentBottom="true"
         android:minHeight="65dp"
         android:onClick="connectButtonOnClick"
-        android:text="Connect" />
+        android:text="@string/connect_button_title" />
 </RelativeLayout>

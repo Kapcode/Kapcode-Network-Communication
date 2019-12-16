@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:text="Server List"
+        android:text="@string/server_list_layout_title"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -28,7 +28,20 @@
         <RadioGroup
             android:id="@+id/server_list_radiogroup"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/custom_ip_radio_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/custom_ip_radio_button" />
+
+            <RadioButton
+                android:id="@+id/usb_radio_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usb_radio_button" />
+        </RadioGroup>
 
     </ScrollView>
 </LinearLayout>
