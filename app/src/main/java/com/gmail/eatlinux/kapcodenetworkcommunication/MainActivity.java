@@ -2,6 +2,8 @@ package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,36 +32,49 @@ public class MainActivity extends AppCompatActivity {
 
     public void startScan(){
         //new Thread // don't block UI thread. (Scanner process blocks.)
-        //TODO handle if Wifi is off, or not connected. turn on? wait if not connected? prompt user to connect?
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-        startScannerThread= new Thread((new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    WifiScanner.startScanningIpRange(ip,port,127,android.os.Build.MODEL+"scanner","demo",3000,eventHandler,true);
-                }catch (java.util.concurrent.RejectedExecutionException e){
-                    e.printStackTrace();
-                }
-                //get first found server, connect to it with new client
-                        //ArrayList<Object[]> listOfServers = WifiScanner.getCopyOfIdentifiedServersList();
-                        //Object[] serverInfo = listOfServers.get(0);
-                        //final String server_ip = (String)serverInfo[1];
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo ethernet = connManager .getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
 
-                                            //create clients, handshake runs on new thread... so non blocking...
-                                            // WifiClient client1 = new WifiClient(server_ip,4006,WifiClient.DEFAULT_TIMEOUT,"Android_client1","demo",false,eventHandler);
-            }
-        }));
-        //if paused, un-pause
-        if(wifiClient==null) {
-            if (WifiScanner.executorService != null) {
-                WifiScanner.paused.set(false);
-            } else {//if null, create and start scan.
-                startScannerThread.start();
+        if (wifi.isConnected() || ethernet.isConnected()) {
+            // If Wi-Fi connected
+
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+            final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+            startScannerThread = new Thread((new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        WifiScanner.startScanningIpRange(ip, port, 127, android.os.Build.MODEL + "scanner", getResources().getString(R.string.app_name), 3000, eventHandler, true);
+                    } catch (java.util.concurrent.RejectedExecutionException e) {
+                        e.printStackTrace();
+                    }
+                    //get first found server, connect to it with new client
+                    //ArrayList<Object[]> listOfServers = WifiScanner.getCopyOfIdentifiedServersList();
+                    //Object[] serverInfo = listOfServers.get(0);
+                    //final String server_ip = (String)serverInfo[1];
+
+                    //create clients, handshake runs on new thread... so non blocking...
+                    // WifiClient client1 = new WifiClient(server_ip,4006,WifiClient.DEFAULT_TIMEOUT,"Android_client1","demo",false,eventHandler);
+                }
+            }));
+            //if paused, un-pause
+            if (wifiClient == null) {
+                if (WifiScanner.executorService != null) {
+                    WifiScanner.paused.set(false);
+                } else {//if null, create and start scan.
+                    startScannerThread.start();
+                }
+            } else {
+                //make sure correct connection layout is visible.. mouse-pad, macro-pad,...where user left off, ... is connected.
+                //do not scan.
             }
         }else{
-            //make sure correct connection layout is visible.. mouse-pad, macro-pad,...where user left off, ... is connected.
-            //do not scan.
+            //todo not connected to wifi or ethernet.... tell user
+            System.out.println("todo not connected to wifi or ethernet.... tell user, CALLING FINISH!");
+            this.finish();
+            //listen for wifi to be connected..
+            //startScan()
         }
 
     }
