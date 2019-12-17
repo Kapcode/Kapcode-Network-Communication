@@ -1,5 +1,7 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -53,7 +55,22 @@ public class MyWifiEventHandler extends WifiEventHandler {
         //set null, because connection is now dead.
         MainActivity.wifiClient=null;
         //un-pause scanner on client disconnected, only if not a ping.
-        if(!client.ping) WifiScanner.paused.set(false);
+        if(!client.ping){
+            //finish connectedActivity, go back to MainActivity.
+            if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
+            //un-pause scanner
+            WifiScanner.paused.set(false);
+        }
+    }
+
+
+    @Override
+    public void clientHandshakeSuccessful(WifiClient client){
+        if(!client.ping){
+            //go to ConnectedActivity
+            Intent myIntent = new Intent(serverListRadioGroup.getContext(), ConnectedActivity.class);
+            serverListRadioGroup.getContext().startActivity(myIntent);
+        }
     }
 
 

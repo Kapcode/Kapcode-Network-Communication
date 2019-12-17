@@ -2,6 +2,7 @@ package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -116,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
 
 
 }
