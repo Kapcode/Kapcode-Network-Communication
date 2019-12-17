@@ -1,4 +1,4 @@
-package com.gmail.eatlinux.kapcodenetworkcommunication;
+package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -15,18 +15,18 @@ public class WifiClient {
     String application;
     String systemName;
     //if true, just handshake, then disconnect
-    boolean ping;
+    public boolean ping;
     ObjectInputStream objectInputStream;
     ObjectOutputStream objectOutputStream;
 
-    String serverName;
+    public String serverName;
     Thread readLoopThread,keepAliveThread;
     WifiEventHandler eventHandler;
     WifiClient thisClient;
 
     AtomicBoolean connectionOpen = new AtomicBoolean(false);
-    String ip;
-    int port;
+    public String ip;
+    public int port;
     Thread handshakeThread;
     int timeout;
 

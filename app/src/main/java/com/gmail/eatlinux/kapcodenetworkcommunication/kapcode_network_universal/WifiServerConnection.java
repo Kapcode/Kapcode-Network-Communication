@@ -1,4 +1,4 @@
-package com.gmail.eatlinux.kapcodenetworkcommunication;
+package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

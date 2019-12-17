@@ -1,4 +1,4 @@
-package com.gmail.eatlinux.kapcodenetworkcommunication;
+package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -23,7 +23,7 @@ public class WifiScanner implements Runnable {
     public static volatile AtomicBoolean paused = new AtomicBoolean(false);
     private static List<Object[]> identifiedServersList = (List<Object[]>) Collections.synchronizedList(new ArrayList<Object[]>());//Object[3] String serverName,String ip, int port
     private int port,timeout;
-    static volatile ExecutorService executorService = null;
+    public static volatile ExecutorService executorService = null;
     private String systemName,application,ip;
     private WifiEventHandler eventHandler;
     private static AtomicInteger tasksCountCompleted;

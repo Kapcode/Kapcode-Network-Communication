@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.WifiClient;
+import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.WifiScanner;
+
 public class MainActivity extends AppCompatActivity {
     final int port = 4006;
     final Handler handler=new Handler();

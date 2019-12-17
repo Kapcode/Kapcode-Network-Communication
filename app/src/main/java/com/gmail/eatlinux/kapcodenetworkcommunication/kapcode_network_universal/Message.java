@@ -1,4 +1,4 @@
-package com.gmail.eatlinux.kapcodenetworkcommunication;
+package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
 import java.io.Serializable;
 
@@ -6,9 +6,6 @@ public class Message implements Serializable {
     public Message(){}
     public Message(Boolean ping){this.ping=ping;}
     //class must be the same on client and server.
-
-
-
     //handshake information
     //name of application sending message (include version?)
     String application;
@@ -16,6 +13,4 @@ public class Message implements Serializable {
     String systemName;
     //if true, disconnect after sending info...
     boolean ping=false;
-
-
 }
