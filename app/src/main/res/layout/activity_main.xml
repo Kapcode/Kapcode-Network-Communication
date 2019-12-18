@@ -24,7 +24,7 @@
         android:text="@string/connect_button_title" />
 
     <include
-        android:id="@+id/custom_ip_include"
+        android:id="@+id/custom_ip_layout_include"
         layout="@layout/custom_ip_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

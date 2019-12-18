@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:onClick="toggleCustomIP_Include"
+            android:onClick="toggleCustomIP_Layout"
             android:text="BACK" />
 
         <TextView

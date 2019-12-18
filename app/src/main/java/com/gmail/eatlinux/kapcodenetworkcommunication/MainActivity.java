@@ -2,7 +2,6 @@ package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -23,12 +22,12 @@ public class MainActivity extends AppCompatActivity {
     MyWifiEventHandler eventHandler;
     static Thread startScannerThread;
     static WifiClient wifiClient = null;
-    View customIP_Include;
+    View customIP_Layout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(customIP_Include==null)customIP_Include = findViewById(R.id.custom_ip_include);
+        if(customIP_Layout ==null) customIP_Layout = findViewById(R.id.custom_ip_layout_include);
         //create event handler if null
          if(eventHandler==null)eventHandler= new MyWifiEventHandler((RadioGroup)findViewById(R.id.server_list_radiogroup),handler);
     }
@@ -50,13 +49,6 @@ public class MainActivity extends AppCompatActivity {
                     } catch (java.util.concurrent.RejectedExecutionException e) {
                         e.printStackTrace();
                     }
-                    //get first found server, connect to it with new client
-                    //ArrayList<Object[]> listOfServers = WifiScanner.getCopyOfIdentifiedServersList();
-                    //Object[] serverInfo = listOfServers.get(0);
-                    //final String server_ip = (String)serverInfo[1];
-
-                    //create clients, handshake runs on new thread... so non blocking...
-                    // WifiClient client1 = new WifiClient(server_ip,4006,WifiClient.DEFAULT_TIMEOUT,"Android_client1","demo",false,eventHandler);
                 }
             }));
             //if paused, un-pause
@@ -100,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             //todo make ui appear for entering ip:port...
 
 
-            if(customIP_Include.getVisibility() == View.VISIBLE){
+            if(customIP_Layout.getVisibility() == View.VISIBLE){
                 //try to connect with user input
                 String name = ((EditText)findViewById(R.id.user_input_server_name)).getText().toString();
                 String ip = ((EditText)findViewById(R.id.user_input_server_ip)).getText().toString();
@@ -113,12 +105,12 @@ public class MainActivity extends AppCompatActivity {
                         //todo use application name from strings.xml
                         wifiClient = new WifiClient(ip,Integer.parseInt(port),3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
                     }else{
-                        toggleCustomIP_Include(null);
+                        toggleCustomIP_Layout(null);
                     }
                 }
 
             }else{
-                toggleCustomIP_Include(null);
+                toggleCustomIP_Layout(null);
             }
 
 
@@ -144,11 +136,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void toggleCustomIP_Include(View view){
-        if(customIP_Include.getVisibility() == View.VISIBLE){
-            customIP_Include.setVisibility(View.GONE);
+    public void toggleCustomIP_Layout(View view){
+        if(customIP_Layout.getVisibility() == View.VISIBLE){
+            customIP_Layout.setVisibility(View.GONE);
         }else{
-            customIP_Include.setVisibility(View.VISIBLE);
+            customIP_Layout.setVisibility(View.VISIBLE);
         }
     }
 
