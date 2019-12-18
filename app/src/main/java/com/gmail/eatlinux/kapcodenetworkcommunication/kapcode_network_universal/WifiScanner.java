@@ -238,7 +238,6 @@ public class WifiScanner implements Runnable {
                             // (Re-)Cancel if current thread also interrupted
                             executorService.shutdownNow();
                             // Preserve interrupt status
-                            Thread.currentThread().interrupt();
                         }
                     }
                 }
@@ -251,8 +250,9 @@ public class WifiScanner implements Runnable {
             while (!executorService.isTerminated()) {
             }
             System.out.println("Finished all scanner threads");
-            stopScanners.set(false);
             executorService=null;
+            stopScanners.set(false);
+
 
     }
     public static void waitForShutdown(){
