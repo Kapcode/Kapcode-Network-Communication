@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.Formatter;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -22,10 +23,12 @@ public class MainActivity extends AppCompatActivity {
     MyWifiEventHandler eventHandler;
     static Thread startScannerThread;
     static WifiClient wifiClient = null;
+    View customIP_Include;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(customIP_Include==null)customIP_Include = findViewById(R.id.custom_ip_include);
         //create event handler if null
          if(eventHandler==null)eventHandler= new MyWifiEventHandler((RadioGroup)findViewById(R.id.server_list_radiogroup),handler);
     }
@@ -35,11 +38,8 @@ public class MainActivity extends AppCompatActivity {
         //new Thread // don't block UI thread. (Scanner process blocks.)
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo ethernet = connManager .getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-
-        if (wifi.isConnected() || ethernet.isConnected()) {
+        if (wifi.isConnected()) {
             // If Wi-Fi connected
-
             WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
             final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
             startScannerThread = new Thread((new Runnable() {
@@ -98,6 +98,31 @@ public class MainActivity extends AppCompatActivity {
         RadioButton rb = findViewById(((RadioGroup)findViewById(R.id.server_list_radiogroup)).getCheckedRadioButtonId());
         if(rb == findViewById(R.id.custom_ip_radio_button)){
             //todo make ui appear for entering ip:port...
+
+
+            if(customIP_Include.getVisibility() == View.VISIBLE){
+                //try to connect with user input
+                String name = ((EditText)findViewById(R.id.user_input_server_name)).getText().toString();
+                String ip = ((EditText)findViewById(R.id.user_input_server_ip)).getText().toString();
+                String port = ((EditText)findViewById(R.id.user_input_server_port)).getText().toString();
+                if(name!=null &! name.isEmpty() & ip!=null &! ip.isEmpty() & port!=null &! port.isEmpty()){
+                    //try to connect
+                    if(wifiClient==null){
+                        //pause scanner
+                        WifiScanner.paused.set(true);
+                        //todo use application name from strings.xml
+                        wifiClient = new WifiClient(ip,Integer.parseInt(port),3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
+                    }else{
+                        toggleCustomIP_Include(null);
+                    }
+                }
+
+            }else{
+                toggleCustomIP_Include(null);
+            }
+
+
+
         }else if(rb == findViewById(R.id.usb_radio_button)){
             //todo make usb information appear
         }else if(rb.getText().toString().contains(":"+port)){
@@ -112,9 +137,18 @@ public class MainActivity extends AppCompatActivity {
                 //pause scanner
                 WifiScanner.paused.set(true);
                 //todo use application name from strings.xml
-                wifiClient = new WifiClient(ip,port,3000,android.os.Build.MODEL,"demo",false,eventHandler);
+                wifiClient = new WifiClient(ip,port,3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
             }
 
+        }
+    }
+
+
+    public void toggleCustomIP_Include(View view){
+        if(customIP_Include.getVisibility() == View.VISIBLE){
+            customIP_Include.setVisibility(View.GONE);
+        }else{
+            customIP_Include.setVisibility(View.VISIBLE);
         }
     }
 

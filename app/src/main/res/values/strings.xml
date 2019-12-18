@@ -4,4 +4,5 @@
     <string name="usb_radio_button">USB (Connect usb cable)</string>
     <string name="server_list_layout_title">Server List</string>
     <string name="connect_button_title">Connect</string>
+    <string name="port">4006</string>
 </resources>

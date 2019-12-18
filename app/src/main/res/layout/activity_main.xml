@@ -7,6 +7,7 @@
     tools:context=".MainActivity" >
 
     <include
+        android:id="@+id/server_list_include"
         layout="@layout/sever_list_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,4 +22,11 @@
         android:minHeight="65dp"
         android:onClick="connectButtonOnClick"
         android:text="@string/connect_button_title" />
+
+    <include
+        android:id="@+id/custom_ip_include"
+        layout="@layout/custom_ip_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 </RelativeLayout>

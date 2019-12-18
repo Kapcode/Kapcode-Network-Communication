@@ -66,6 +66,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
 
     @Override
     public void clientHandshakeSuccessful(WifiClient client){
+        super.clientHandshakeSuccessful(client);
         if(!client.ping){
             //go to ConnectedActivity
             Intent myIntent = new Intent(serverListRadioGroup.getContext(), ConnectedActivity.class);
