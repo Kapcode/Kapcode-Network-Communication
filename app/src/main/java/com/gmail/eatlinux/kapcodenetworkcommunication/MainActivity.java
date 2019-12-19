@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.WifiClient;
 import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.WifiScanner;
@@ -56,40 +57,44 @@ public class MainActivity extends AppCompatActivity {
 
     public void startScan(){
         //new Thread // don't block UI thread. (Scanner process blocks.)
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifi.isConnected()) {
+
             // If Wi-Fi connected
-            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-            final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-            startScannerThread = new Thread((new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        WifiScanner.startScanningIpRange(ip, port, 127, android.os.Build.MODEL + "scanner", getResources().getString(R.string.app_name), 3000, eventHandler, true);
-                    } catch (java.util.concurrent.RejectedExecutionException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
+
             //if paused, un-pause
             if (wifiClient == null) {
                 if (WifiScanner.executorService != null) {
                     WifiScanner.paused.set(false);
                 } else {//if null, create and start scan.
-                    startScannerThread.start();
+                    ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                    NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    if(wifi.isConnected()){
+                        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                        final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+                        startScannerThread = new Thread((new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    WifiScanner.startScanningIpRange(ip, port, 127, android.os.Build.MODEL + "scanner", getResources().getString(R.string.app_name), 3000, eventHandler, true);
+                                } catch (java.util.concurrent.RejectedExecutionException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }));
+                        startScannerThread.start();
+                    }else{
+                        //toast
+                        //todo set goal of scanner object to get ip and start
+
+
+                        Toast.makeText(getApplicationContext(),"WIFI IS OFF: Turn on wifi, and restart app.",Toast.LENGTH_LONG).show();
+                        this.finish();
+                    }
                 }
             } else {
                 //make sure correct connection layout is visible.. mouse-pad, macro-pad,...where user left off, ... is connected.
                 //do not scan.
             }
-        }else{
-            //todo not connected to wifi or ethernet.... tell user
-            System.out.println("todo not connected to wifi or ethernet.... tell user, CALLING FINISH!");
-            this.finish();
-            //listen for wifi to be connected..
-            //startScan()
-        }
+
 
     }
     public void onResume(){
