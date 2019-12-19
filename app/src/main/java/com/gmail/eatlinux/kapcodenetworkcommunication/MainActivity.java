@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.Formatter;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -18,18 +19,38 @@ import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.
 
 public class MainActivity extends AppCompatActivity {
     final int port = 4006;
-    final Handler handler=new Handler();
-    MyWifiEventHandler eventHandler;
+    static Handler handler;
+    static MyWifiEventHandler eventHandler;
     static Thread startScannerThread;
     static WifiClient wifiClient = null;
     View customIP_Layout;
+    static RadioGroup serverListRadioGroup = null;
+    static Button connectButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(customIP_Layout ==null) customIP_Layout = findViewById(R.id.custom_ip_layout_include);
+        //remove any identified servers from list
+        //synchronized, should block until destroy finishes clearing list.
+        WifiScanner.getIdentifiedServersListSize();
+        //load in views
+        customIP_Layout = findViewById(R.id.custom_ip_layout_include);
+        serverListRadioGroup = findViewById(R.id.server_list_radiogroup);
+        connectButton=findViewById(R.id.connectButton);
         //create event handler if null
-         if(eventHandler==null)eventHandler= new MyWifiEventHandler((RadioGroup)findViewById(R.id.server_list_radiogroup),handler);
+        if(handler==null){
+            handler=new Handler();
+            System.out.println("MADE NEW HANDLER");
+        }
+        //create eventHandler if null
+        if(eventHandler==null){
+            eventHandler= new MyWifiEventHandler(serverListRadioGroup,handler);
+            System.out.println("MADE NEW EVNT HANDLER");
+        }
+        eventHandler.setServerListRadioGroup(serverListRadioGroup);
+
+
+        System.out.println("CREATE");
     }
 
 
@@ -72,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void onResume(){
+        findViewById(R.id.connectButton).setEnabled(true);
         startScan();
         super.onResume();
     }
@@ -82,16 +104,22 @@ public class MainActivity extends AppCompatActivity {
     public void onStop(){
         super.onStop();
     }
+    @Override
+    public void onDestroy(){
+        //must clear list in memory, because the UI list will be cleared by super.onDestroy.
+        WifiScanner.clearIdentifiedServersList();
+        super.onDestroy();
+    }
 
 
 
+    //todo disable button after click, until action is complete!
     public void connectButtonOnClick(View view){
+        view.setEnabled(false);
         //get selected radio button, parse info, connect...
         RadioButton rb = findViewById(((RadioGroup)findViewById(R.id.server_list_radiogroup)).getCheckedRadioButtonId());
         if(rb == findViewById(R.id.custom_ip_radio_button)){
             //todo make ui appear for entering ip:port...
-
-
             if(customIP_Layout.getVisibility() == View.VISIBLE){
                 //try to connect with user input
                 String name = ((EditText)findViewById(R.id.user_input_server_name)).getText().toString();
@@ -100,16 +128,19 @@ public class MainActivity extends AppCompatActivity {
                 if(name!=null &! name.isEmpty() & ip!=null &! ip.isEmpty() & port!=null &! port.isEmpty()){
                     //try to connect
                     if(wifiClient==null){
+                        System.out.println("NULL");
                         //pause scanner
                         WifiScanner.paused.set(true);
                         //todo use application name from strings.xml
                         wifiClient = new WifiClient(ip,Integer.parseInt(port),3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
-                    }else{
+                    }else{System.out.println("NOT NULL");
+                        view.setEnabled(true);
                         toggleCustomIP_Layout(null);
                     }
                 }
 
             }else{
+                view.setEnabled(true);
                 toggleCustomIP_Layout(null);
             }
 
@@ -133,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
     }
 
 
@@ -143,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
             customIP_Layout.setVisibility(View.VISIBLE);
         }
     }
+
 
 
 

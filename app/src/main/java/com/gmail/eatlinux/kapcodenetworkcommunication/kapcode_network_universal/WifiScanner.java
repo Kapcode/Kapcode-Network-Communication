@@ -108,6 +108,9 @@ public class WifiScanner implements Runnable {
     public static ArrayList<Object[]> getCopyOfIdentifiedServersList(){
         return (ArrayList<Object[]>) accessIdentifiedServerList(null,null,0,COPY,null,null);
     }
+    public static void clearIdentifiedServersList(){
+        accessIdentifiedServerList(null,null,0,CLEAR,null,null);
+    }
 
 
 
@@ -276,7 +279,7 @@ public class WifiScanner implements Runnable {
         }catch (NullPointerException e){
 
         }
-        //todo concurency errors.. not thread safe, and list might be set null during iteration!
+
         if(runnableList!=null)for(WifiScanner r: runnableList) {
             try {
                 r.socket.close();
@@ -287,14 +290,4 @@ public class WifiScanner implements Runnable {
         waitForShutdown();
         System.out.println("STOPPED");
     }
-
-
-
-
-
 }
-
-
-
-
-

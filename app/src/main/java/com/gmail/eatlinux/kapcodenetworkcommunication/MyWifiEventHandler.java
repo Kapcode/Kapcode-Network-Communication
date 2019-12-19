@@ -1,6 +1,5 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.widget.RadioButton;
@@ -16,6 +15,10 @@ public class MyWifiEventHandler extends WifiEventHandler {
     public MyWifiEventHandler(RadioGroup serverListRadioGroup, Handler handler){
         this.serverListRadioGroup = serverListRadioGroup;
         this.handler=handler;
+    }
+    // needs to be called if MainActivity or the RadioGroup gets destroyed, so in MainActivity on create.
+    public void setServerListRadioGroup(RadioGroup radioGroup){
+        serverListRadioGroup = radioGroup;
     }
 
     @Override
@@ -50,6 +53,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
         }});
     }
 
+    @Override
     public void clientDisconnected(WifiClient client, Exception[] exceptions){
         super.clientDisconnected(client,exceptions);
         //set null, because connection is now dead.
@@ -72,6 +76,29 @@ public class MyWifiEventHandler extends WifiEventHandler {
             Intent myIntent = new Intent(serverListRadioGroup.getContext(), ConnectedActivity.class);
             serverListRadioGroup.getContext().startActivity(myIntent);
         }
+    }
+
+    @Override
+    public void clientFailedToConnect(WifiClient client,Exception e){
+
+        super.clientFailedToConnect(client,e);
+
+        //set null, because connection is now dead.
+
+        //connect button needs to be enabled.
+        //if not ping, finish ConnectedActivity, and enable connectButton -> on failing to connect,un-pause scanner
+        if(!client.ping)handler.post(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.wifiClient=null;
+                MainActivity.connectButton.setEnabled(true);
+                if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
+                WifiScanner.paused.set(false);
+
+            }
+        });
+
+
     }
 
 

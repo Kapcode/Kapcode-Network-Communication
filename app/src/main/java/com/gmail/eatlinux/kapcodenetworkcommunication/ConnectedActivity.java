@@ -6,6 +6,7 @@ import android.view.View;
 
 public class ConnectedActivity extends AppCompatActivity {
     static ConnectedActivity connectedActivity;
+    boolean disconnectCalled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -15,6 +16,7 @@ public class ConnectedActivity extends AppCompatActivity {
     
     @Override
     public void onPause(){
+        disconnect(null);
         super.onPause();
     }
 
@@ -27,12 +29,21 @@ public class ConnectedActivity extends AppCompatActivity {
 
     @Override
     public void onStop(){
+        disconnect(null);
         super.onStop();
     }
 
 
     public void disconnect(View view){
-        MainActivity.wifiClient.disconnect(null);
-        //event handler should handle the activity switch.
+        if(!disconnectCalled){
+            disconnectCalled=true;
+            if(MainActivity.wifiClient!=null){
+                MainActivity.wifiClient.disconnect(null);
+            }else{
+                System.out.println("wifiClient is null?");
+            }
+            //event handler should handle the activity switch.
+        }
+
     }
 }
