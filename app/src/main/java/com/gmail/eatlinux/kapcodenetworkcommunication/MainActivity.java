@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    //todo disable button after click, until action is complete!
     public void connectButtonOnClick(View view) {
         view.setEnabled(false);
         //get selected radio button, parse info, connect...
@@ -108,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
 
             if (rb == findViewById(R.id.custom_ip_radio_button)) {
-                //todo make ui appear for entering ip:port...
                 if (customIP_Layout.getVisibility() == View.VISIBLE) {
                     //try to connect with user input
                     String name = ((EditText) findViewById(R.id.user_input_server_name)).getText().toString();
@@ -119,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
                         if (wifiClient == null) {
                             //pause scanner
                             wifiScanner.goal.set(WifiScanner.PAUSE);
-                            //todo use application name from strings.xml
                             wifiClient = new WifiClient(ip, Integer.parseInt(port), 10000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                         } else {
                             view.setEnabled(true);
@@ -146,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 if (wifiClient == null) {
                     //pause scanner
                     wifiScanner.goal.set(WifiScanner.PAUSE);
-                    //todo use application name from strings.xml
                     wifiClient = new WifiClient(ip, port, 3000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                 }
 

@@ -7,19 +7,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("unused")
 public class WifiScanner {
     public static final int STOP=0,START=1,PAUSE=2,REMOVE = 0,ADD = 1,ADD_IF_NOT_CONTAINS = 2,CLEAR = 3,GET_SIZE = 4,COPY = 5,CONTAINS = 6;
     public AtomicInteger goal;
     AtomicInteger tasksCompleted;
+    @SuppressWarnings("FieldCanBeLocal")
     private final int taskTotal = 255;
     private ExecutorService executorService;
+    @SuppressWarnings("FieldCanBeLocal")
     private Thread managerThread;
     private WifiEventHandler eventHandler;
     private int threadCount;
     private int connectionTimeout;
     //only referenced right before starting execution of runnable's. changes to this during will result in the next run reflecting this change.
     private volatile String deviceAddress;
-    //todo make thread safe
     ArrayList<WifiScanTask> taskList;
     private List<Object[]> identifiedServersList;//Object[3] String serverName,String ip, int port
 
@@ -180,7 +182,6 @@ public class WifiScanner {
         //create a pool if null
         if(executorService==null)executorService = Executors.newFixedThreadPool(threadCount);
         //make list of WifiScanTasks
-        //todo make thread safe...sync
         if(taskList==null){
             taskList = new ArrayList<>();
             int threadNumber = 0;

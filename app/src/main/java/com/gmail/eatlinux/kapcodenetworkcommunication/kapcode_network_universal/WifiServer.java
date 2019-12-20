@@ -94,9 +94,6 @@ public class WifiServer {
             } catch (IOException e) {
                 if(serverIsRunning.get()) {
                     System.err.println("server: error accepting! " + e.toString());
-                    //TODO decide how to handle this, server should stay running i think?
-                    //e.printStackTrace();
-                    //serverIsRunning.set(false);
                 }else{//most likely caused by server.stopServer()
                     eventHandler.serverStopped();
                 }
@@ -130,11 +127,11 @@ public class WifiServer {
         }
     }
 
+    @SuppressWarnings("unused")
     public WifiServer restartServer() throws InterruptedException {
         stopServer();
         //start a new server using old params
-        WifiServer server = new WifiServer(port,systemName,application,eventHandler);
-        return server;
+        return new WifiServer(port,systemName,application,eventHandler);
 
     }
 

@@ -3,6 +3,7 @@ package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal
 import java.io.EOFException;
 import java.net.SocketException;
 
+@SuppressWarnings("unused")
 public class WifiEventHandler {
     //TODO use an actual logger instead of this madness
     public static final String ANSI_RESET = "\u001B[0m";

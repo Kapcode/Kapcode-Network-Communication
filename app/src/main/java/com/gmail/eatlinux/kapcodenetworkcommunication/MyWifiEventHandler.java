@@ -24,7 +24,6 @@ public class MyWifiEventHandler extends WifiEventHandler {
     @Override
     public void scannerFoundServer(final WifiClient client){
         super.scannerFoundServer(client);
-        //todo add to ui
         handler.post(new Runnable(){public void run(){
             String serverName = client.serverName;
             String ip = client.ip;
