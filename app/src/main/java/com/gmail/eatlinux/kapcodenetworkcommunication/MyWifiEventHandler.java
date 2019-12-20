@@ -63,7 +63,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
             //finish connectedActivity, go back to MainActivity.
             if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
             //un-pause scanner
-            WifiScanner.paused.set(false);
+            MainActivity.wifiScanner.goal.set(WifiScanner.START);
         }
     }
 
@@ -93,7 +93,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
                 MainActivity.wifiClient=null;
                 MainActivity.connectButton.setEnabled(true);
                 if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
-                WifiScanner.paused.set(false);
+                MainActivity.wifiScanner.goal.set(WifiScanner.START);
 
             }
         });

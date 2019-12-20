@@ -27,13 +27,14 @@ public class MainActivity extends AppCompatActivity {
     View customIP_Layout;
     static RadioGroup serverListRadioGroup = null;
     static Button connectButton;
+    public static WifiScanner wifiScanner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //remove any identified servers from list
         //synchronized, should block until destroy finishes clearing list.
-        WifiScanner.getIdentifiedServersListSize();
+        //wifiScanner.getIdentifiedServersListSize();//TODO REWRITE TO MATCH USER SPACE OF WifiScanner
         //load in views
         customIP_Layout = findViewById(R.id.custom_ip_layout_include);
         serverListRadioGroup = findViewById(R.id.server_list_radiogroup);
@@ -62,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
             //if paused, un-pause
             if (wifiClient == null) {
-                if (WifiScanner.executorService != null) {
-                    WifiScanner.paused.set(false);
+                if (wifiScanner != null) {
+                    wifiScanner.goal.set(WifiScanner.START);
                 } else {//if null, create and start scan.
                     ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
                     NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 try {
-                                    WifiScanner.startScanningIpRange(ip, port, 127, android.os.Build.MODEL + "scanner", getResources().getString(R.string.app_name), 3000, eventHandler, true);
+                                    if(wifiScanner==null)wifiScanner= new WifiScanner(android.os.Build.MODEL + "scanner"+":"+getResources().getString(R.string.app_name)+":"+ip+":"+port, 3000,128, eventHandler);
                                 } catch (java.util.concurrent.RejectedExecutionException e) {
                                     e.printStackTrace();
                                 }
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
     public void onPause(){
-        WifiScanner.paused.set(true);
+        wifiScanner.goal.set(WifiScanner.PAUSE);
         super.onPause();
     }
     public void onStop(){
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy(){
         //must clear list in memory, because the UI list will be cleared by super.onDestroy.
-        WifiScanner.clearIdentifiedServersList();
+        wifiScanner.clearIdentifiedServersList();
         super.onDestroy();
     }
 
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     if(wifiClient==null){
                         System.out.println("NULL");
                         //pause scanner
-                        WifiScanner.paused.set(true);
+                        wifiScanner.goal.set(WifiScanner.PAUSE);
                         //todo use application name from strings.xml
                         wifiClient = new WifiClient(ip,Integer.parseInt(port),3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
                     }else{System.out.println("NOT NULL");
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(wifiClient==null){
                 //pause scanner
-                WifiScanner.paused.set(true);
+                wifiScanner.goal.set(WifiScanner.PAUSE);
                 //todo use application name from strings.xml
                 wifiClient = new WifiClient(ip,port,3000,android.os.Build.MODEL,getResources().getString(R.string.app_name),false,eventHandler);
             }
