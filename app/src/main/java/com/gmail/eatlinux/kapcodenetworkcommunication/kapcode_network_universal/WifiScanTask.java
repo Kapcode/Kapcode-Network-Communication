@@ -5,7 +5,7 @@ public class WifiScanTask implements Runnable{
     //on find, adds to scanner.identifiedServersList, then in turn to UI
 
     WifiScanner scanner;
-    WifiClient client;
+    WifiClient client = null;
     WifiEventHandler eventHandler;
     String ip;
     String name;
@@ -13,6 +13,7 @@ public class WifiScanTask implements Runnable{
     int port;
     int timeout;
     int threadNumber;
+    String lastDeviceAddressUsed = "";
 
 
 
@@ -30,13 +31,16 @@ public class WifiScanTask implements Runnable{
     @Override
     public void run() {
         //get the address from scanner. every scan will be of the current address.
-        String[] address = scanner.getDeviceAddress().split(":");
-        name=address[0];
-        application = address[1];
-        ip=trim_ip(address[2])+threadNumber;
-        port=Integer.parseInt(address[3]);
-        //System.out.println("SCAN START "+ip);
-        //todo application
+        String deviceAddress = scanner.getDeviceAddress();
+        //only update if changed.
+        if(!deviceAddress.equals(lastDeviceAddressUsed)){
+            lastDeviceAddressUsed=deviceAddress;
+            String[] address = scanner.getDeviceAddress().split(":");
+            name=address[0];
+            application = address[1];
+            ip=trim_ip(address[2])+threadNumber;
+            port=Integer.parseInt(address[3]);
+        }
         client = new WifiClient(ip,port,timeout,name,application,true,eventHandler);
         client.startHandshake();
 
@@ -53,7 +57,6 @@ public class WifiScanTask implements Runnable{
             }
 
         }
-        //System.out.println("SCAN DONE "+ip);
         scanner.tasksCompleted.incrementAndGet();
     }
 
