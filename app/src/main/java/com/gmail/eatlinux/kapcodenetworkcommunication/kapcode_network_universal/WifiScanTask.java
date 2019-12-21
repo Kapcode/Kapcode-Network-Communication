@@ -26,7 +26,7 @@ public class WifiScanTask implements Runnable{
         this.scanner=scanner;
         this.eventHandler=eventHandler;
         this.timeout=timeout;
-        //append this int at end of ip-
+        //append this int at end of ip- to complete it. Thread number=z  192.168.y.z     10.x.y.z   127.x.y.z
         this.threadNumber = threadNumber;
     }
 
@@ -59,22 +59,12 @@ public class WifiScanTask implements Runnable{
         client.startHandshake();
 
         if (client.serverName != null) {
-            //notified only if list does not contain this ip...
-
-            //todo this line
-            //scanner.addIdentifiedServerToList(client.serverName, client.ip, client.port, eventHandler, client);
+            //notified only if map does not contain this ip...
             scanner.addIdentifiedServerToMap(client.serverName,client.ip,client.port,eventHandler,client);
 
         } else {
             //connection failed...
-            //remove from list
-
-            //todo this block
-            //if(scanner.identifiedServersListContains(client.ip,client.port)){
-                //eventHandler.scannerLostServer(client.ip,client.port);
-                //scanner.removeIdentifiedServerFromListByAddress(client.ip, client.port);
-            //}
-
+            //remove from map
             if(scanner.identifiedServersMapContains(client.ip)){
                 eventHandler.scannerLostServer(client.ip,client.port);
                 scanner.removeIdentifiedServerFromMapByAddress(client.ip);

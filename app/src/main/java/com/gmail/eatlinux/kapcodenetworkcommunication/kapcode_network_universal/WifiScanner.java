@@ -1,22 +1,17 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("unused")
 public class WifiScanner {
     public static final int STOP=0,START=1,PAUSE=2,REMOVE = 0,ADD = 1,ADD_IF_NOT_CONTAINS = 2,CLEAR = 3,GET_SIZE = 4,COPY = 5,CONTAINS = 6;
     public AtomicInteger goal;
     AtomicInteger tasksCompleted;
-    @SuppressWarnings("FieldCanBeLocal")
     private final int taskTotal = 255;
     private ExecutorService executorService;
-    @SuppressWarnings("FieldCanBeLocal")
     private Thread managerThread;
     private WifiEventHandler eventHandler;
     private int threadCount;
@@ -24,8 +19,6 @@ public class WifiScanner {
     //only referenced right before starting execution of runnable's. changes to this during will result in the next run reflecting this change.
     private volatile String deviceAddress;
     ArrayList<WifiScanTask> taskList;
-    //private List<Object[]> identifiedServersList;//Object[3] String serverName,String ip, int port
-
     public String getDeviceAddress(){
         //get without setting.
         return accessDeviceAddress(null);
@@ -39,13 +32,11 @@ public class WifiScanner {
         }
         return deviceAddress;
     }
-
-
-
     //key is ip
     //value is {port,name}
     private volatile HashMap<String,Object[]> identifiedServersMap = new HashMap<>(10);
-    private Object accessIdentifiedServersMap(int action,String key,Object[] value,WifiClient client,WifiEventHandler eventHandler){
+
+    private synchronized Object accessIdentifiedServersMap(int action,String key,Object[] value,WifiClient client,WifiEventHandler eventHandler){
         if(action == CONTAINS )return identifiedServersMap.containsKey(key);
         switch (action){
             case ADD_IF_NOT_CONTAINS:
@@ -92,101 +83,8 @@ public class WifiScanner {
 
 
 
-
-
-
-
-
-    //SYNC LISTS
-    /*private synchronized Object accessIdentifiedServerList(String serverName, String ip, int port, int action,WifiEventHandler eventHandler,WifiClient client){
-        //TODO wrap with an object? create object class to handle this instead of using an object[]
-        //contains is called the most.
-        if(action == CONTAINS){
-            //loop over list
-            //check if contains ip and port
-            for(Object[] arr: identifiedServersList){
-                if(arr[1].equals(ip) && arr[2].equals(port)){
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        int startSize = identifiedServersList.size();
-        Object[] server = new Object[]{serverName,ip,port};
-        switch (action){
-
-            case ADD:
-                break;
-            case ADD_IF_NOT_CONTAINS:
-                boolean contains = false;
-                for(Object o:identifiedServersList){
-                    //cast object array, get index 1, ip, if ip.equals(thisip)
-                    String oip = (String)((Object[])o)[1];
-                    if (ip.equals(oip)) {
-                        contains = true;
-                        break;
-                    }
-                }
-                if(!contains){
-                    identifiedServersList.add(server);
-                    eventHandler.scannerFoundServer(client);
-                }
-                break;
-            case REMOVE:
-                //remove by ip:port
-                //find all objects that have this ip.
-                ArrayList<Object> serversToRemove = new ArrayList<>();
-                for(Object o:identifiedServersList){
-                    String oip = (String)((Object[])o)[1];
-                    if(ip.equals(oip))serversToRemove.add(o);
-                }
-                //remove them
-                for(Object o:serversToRemove)identifiedServersList.remove(o);//suspicious warning
-                break;
-            case CLEAR:
-                identifiedServersList.clear();
-                break;
-            case COPY:
-                ArrayList<Object[]> listCopy = new ArrayList<>();
-                listCopy.addAll(identifiedServersList);
-                return listCopy;
-
-
-
-
-        }
-        if(identifiedServersList.size()!=startSize)System.out.println("client: identified_servers= "+identifiedServersList.size());
-        return identifiedServersList.size();
-    }
-    public void addIdentifiedServerToList(String serverName,String ip,int port,WifiEventHandler eventHandler,WifiClient client){
-        accessIdentifiedServerList(serverName,ip,port,ADD_IF_NOT_CONTAINS,eventHandler,client);
-    }
-    public void removeIdentifiedServerFromListByAddress(String ip,int port){
-        accessIdentifiedServerList("",ip,port,REMOVE,null,null);
-    }
-    public boolean identifiedServersListContains(String ip,int port){
-        return (boolean)accessIdentifiedServerList(null,ip,port,CONTAINS,null,null);
-    }
-
-    public void clearIdentifiedServersList(){
-        accessIdentifiedServerList(null,null,0,CLEAR,null,null);
-    }
-    public void getIdentifiedServersListSize(){
-        accessIdentifiedServerList(null,null,0,GET_SIZE,null,null);
-    }*/
-
-
-
-
-
-
     //manages a thread-pool with WifiScanTasks to look for a server within a given ip range.
     //a separate thread for managing starts,stops,pauses will look for a 'goal', and try to complete it...
-
-
-
-
     //use name:ip:port,2000,254
     public WifiScanner(String address_deviceName_application_ip_port, int connectionTimeout, int threadCount, WifiEventHandler eventHandler){
         goal = new AtomicInteger(START);
@@ -227,15 +125,7 @@ public class WifiScanner {
             }
         });
         managerThread.start();
-
-
-
-
-
     }
-
-
-
 
     private void start(){
         //create a pool if null
@@ -267,15 +157,6 @@ public class WifiScanner {
     private void stop(){
         //todo shutdown() and set executorService null after terminated()
     }
-
-
-
-
-
-
-
-
-
 
 }
 

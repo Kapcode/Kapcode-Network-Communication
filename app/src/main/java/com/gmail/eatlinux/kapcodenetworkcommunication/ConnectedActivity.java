@@ -5,13 +5,12 @@ import android.os.Bundle;
 import android.view.View;
 
 public class ConnectedActivity extends AppCompatActivity {
-    static ConnectedActivity connectedActivity;
     boolean disconnectCalled = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connected);
-        connectedActivity=this;
+        MainActivity.eventHandler.activity = this;
     }
     
     @Override

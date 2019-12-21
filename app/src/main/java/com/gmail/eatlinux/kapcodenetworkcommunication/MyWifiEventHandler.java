@@ -1,5 +1,6 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.widget.RadioButton;
@@ -12,6 +13,7 @@ import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.
 public class MyWifiEventHandler extends WifiEventHandler {
     RadioGroup serverListRadioGroup;
     Handler handler;
+    Activity activity;
     public MyWifiEventHandler(RadioGroup serverListRadioGroup, Handler handler){
         this.serverListRadioGroup = serverListRadioGroup;
         this.handler=handler;
@@ -60,7 +62,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
         //un-pause scanner on client disconnected, only if not a ping.
         if(!client.ping){
             //finish connectedActivity, go back to MainActivity.
-            if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
+            if(activity!=null)activity.finish();
             //un-pause scanner
             MainActivity.wifiScanner.goal.set(WifiScanner.START);
         }
@@ -91,7 +93,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
             public void run() {
                 MainActivity.wifiClient=null;
                 MainActivity.connectButton.setEnabled(true);
-                if(ConnectedActivity.connectedActivity!=null)ConnectedActivity.connectedActivity.finish();
+                if(activity!=null)activity.finish();
                 MainActivity.wifiScanner.goal.set(WifiScanner.START);
 
             }

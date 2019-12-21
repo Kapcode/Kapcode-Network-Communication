@@ -29,60 +29,33 @@ public class MainActivity extends AppCompatActivity {
     static RadioGroup serverListRadioGroup = null;
     static Button connectButton;
     public static WifiScanner wifiScanner;
-    static AtomicBoolean startScanWhenWifiConnects;
+    static volatile AtomicBoolean startScanWhenWifiConnects,isVisible;
     static Thread wifiWatcherThread =null;
-    static volatile AtomicBoolean isVisible;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        kapcodeNetworkOnCreate();
+        /*
+        todo when creating new app:
+        todo change application name in strings.xml
+        todo change port
+        todo adjust timeouts for scanner, and wifiClient
+         */
+    }
+
+    public void kapcodeNetworkOnCreate(){
         customIP_Layout = findViewById(R.id.custom_ip_layout_include);
         serverListRadioGroup = findViewById(R.id.server_list_radiogroup);
         connectButton=findViewById(R.id.connectButton);
-        if(handler==null){
-            handler=new Handler();
-        }
-        if(eventHandler==null){
-            eventHandler= new MyWifiEventHandler(serverListRadioGroup,handler);
-        }
+        if(handler==null) handler=new Handler();
+        if(eventHandler==null) eventHandler= new MyWifiEventHandler(serverListRadioGroup,handler);
         eventHandler.setServerListRadioGroup(serverListRadioGroup);
         if(startScanWhenWifiConnects ==null)startScanWhenWifiConnects=new AtomicBoolean(false);
         if(isVisible==null)isVisible=new AtomicBoolean(true);
     }
 
-
-    public synchronized void startScan(){
-        //new Thread // don't block UI thread. (Scanner process blocks.)
-        // If Wi-Fi connected
-        //if paused, un-pause
-        if (wifiClient == null) {
-            if (wifiScanner != null) {
-                //un-pause
-                wifiScanner.goal.set(WifiScanner.START);
-            } else {//if null, create and start scan.
-                boolean wifiIsConnected = false;
-
-                try{
-                    wifiIsConnected = ((ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
-                }catch (NullPointerException e){
-                    //wifi is assumed to be not connected, so scanner will not start.
-                    //or wifi not present.
-                }
-
-                if(wifiIsConnected){
-                    wifiScanner= new WifiScanner(getDeviceAddress(), 3000,128, eventHandler);
-                }else{
-                    //toast
-                    Toast.makeText(getApplicationContext(),"WIFI IS OFF: Please turn on wifi.",Toast.LENGTH_SHORT).show();
-                }
-            }
-        } else {
-            //make sure correct connection layout is visible.. mouse-pad, macro-pad,...where user left off, ... is connected.
-            //do not scan.
-        }
-
-
-    }
     public void onResume(){
         isVisible.set(true);
         findViewById(R.id.connectButton).setEnabled(true);
@@ -102,10 +75,47 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy(){
         //must clear list in memory, because the UI list will be cleared by super.onDestroy.
         isVisible.set(false);
-        //wifiScanner.clearIdentifiedServersList();
         wifiScanner.clearIdentifiedServersMap(eventHandler);
         super.onDestroy();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public synchronized void startScan(){
+        //if paused, un-pause
+        if (wifiClient == null) {
+            if (wifiScanner != null) {
+                wifiScanner.goal.set(WifiScanner.START);
+            } else {//if null, create and start scan.
+                boolean wifiIsConnected = false;
+                try{
+                    wifiIsConnected = ((ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
+                }catch (NullPointerException e){
+                    //wifi is not present or not connected
+                }
+                if(wifiIsConnected){
+                    wifiScanner= new WifiScanner(getDeviceAddress(), 3000,128, eventHandler);
+                }else{
+                    //toast
+                    Toast.makeText(getApplicationContext(),"WIFI IS OFF: Please turn on wifi.",Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+
+    }
+
 
 
 
@@ -172,12 +182,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     //watches wifi connectivity state.
-
     //if was connected, and just disconnected -> pause scanner, clear the IdentifiedServersList
     //if was disconnected, and just connected -> setDeviceAddress, and un-pause scanner
     public void startWifiWatcher(){// watches wifi
         if(wifiWatcherThread==null){
-
             wifiWatcherThread=new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -195,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
                             //if just disconnected, pause scanner, clear list
                             if(wifiScanner!=null){
                                 wifiScanner.goal.set(WifiScanner.PAUSE);
-                                //wifiScanner.clearIdentifiedServersList();
                                 wifiScanner.clearIdentifiedServersMap(eventHandler);
                             }
                         }
@@ -206,16 +213,12 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-
-
-
                 }
             });
             wifiWatcherThread.start();
         }
 
     }
-
     //concat system name, application name, wifi ip address, port
     public String getDeviceAddress(){
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -224,8 +227,4 @@ public class MainActivity extends AppCompatActivity {
         String application = getResources().getString(R.string.app_name).replace(":","");
         return name+":"+application+":"+ip+":"+port;
     }
-
-
-
-
 }
