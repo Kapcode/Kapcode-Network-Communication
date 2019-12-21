@@ -32,8 +32,9 @@ public class WifiScanTask implements Runnable{
     public void run() {
         //get the address from scanner. every scan will be of the current address.
         String deviceAddress = scanner.getDeviceAddress();
+        boolean updateAddress = !deviceAddress.equals(lastDeviceAddressUsed);//check .equals() once.
         //only update if changed.
-        if(!deviceAddress.equals(lastDeviceAddressUsed)){
+        if(updateAddress){
             lastDeviceAddressUsed=deviceAddress;
             String[] address = scanner.getDeviceAddress().split(":");
             name=address[0];
@@ -41,7 +42,17 @@ public class WifiScanTask implements Runnable{
             ip=trim_ip(address[2])+threadNumber;
             port=Integer.parseInt(address[3]);
         }
-        client = new WifiClient(ip,port,timeout,name,application,true,eventHandler);
+        //create a new client if null
+        if(client==null){
+            client = new WifiClient(ip,port,timeout,name,application,true,eventHandler);
+        }else if(updateAddress){
+            //update info.
+            client.ip = ip;
+            client.port=port;
+            client.systemName=name;
+            client.application=application;
+        }
+
         client.startHandshake();
 
         if (client.serverName != null) {

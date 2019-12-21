@@ -60,14 +60,17 @@ public class MainActivity extends AppCompatActivity {
                 //un-pause
                 wifiScanner.goal.set(WifiScanner.START);
             } else {//if null, create and start scan.
-                ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-                NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                if(wifi.isConnected()){
-                    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-                    final String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                    if(wifiScanner==null){
-                        wifiScanner= new WifiScanner(getDeviceAddress(), 3000,128, eventHandler);
-                    }
+                boolean wifiIsConnected = false;
+
+                try{
+                    wifiIsConnected = ((ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
+                }catch (NullPointerException e){
+                    //wifi is assumed to be not connected, so scanner will not start.
+                    //or wifi not present.
+                }
+
+                if(wifiIsConnected){
+                    wifiScanner= new WifiScanner(getDeviceAddress(), 3000,128, eventHandler);
                 }else{
                     //toast
                     Toast.makeText(getApplicationContext(),"WIFI IS OFF: Please turn on wifi.",Toast.LENGTH_SHORT).show();
@@ -112,8 +115,6 @@ public class MainActivity extends AppCompatActivity {
         if (rb == null) {
             view.setEnabled(true);
         } else {
-
-
             if (rb == findViewById(R.id.custom_ip_radio_button)) {
                 if (customIP_Layout.getVisibility() == View.VISIBLE) {
                     //try to connect with user input
@@ -148,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
                 String ip = textParts[1];
                 //port is in array too, but above if statement needs it to be this.port
                 System.out.println(rb.getText().toString());
-
                 if (wifiClient == null) {
                     //pause scanner
                     wifiScanner.goal.set(WifiScanner.PAUSE);
@@ -184,20 +184,20 @@ public class MainActivity extends AppCompatActivity {
                     boolean lastIsConnected = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
                     //check if connection changes
                     while(true){
-                        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                        boolean wifiIsConnected = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
                         //if was disconnected, and just connected, and MainActivity is visible, start scan
-                        if(!lastIsConnected && wifi.isConnected() && isVisible.get()){
+                        if(!lastIsConnected && wifiIsConnected && isVisible.get()){
                             //if scanner has already been created, must set device address in-case it has changed
                             if(wifiScanner!=null)wifiScanner.setDeviceAddress(getDeviceAddress());
                             startScan();
-                        }else if(lastIsConnected &! wifi.isConnected()){
+                        }else if(lastIsConnected &! wifiIsConnected){
                             //if just disconnected, pause scanner, clear list
                             if(wifiScanner!=null){
                                 wifiScanner.goal.set(WifiScanner.PAUSE);
                                 wifiScanner.clearIdentifiedServersList();
                             }
                         }
-                        lastIsConnected=wifi.isConnected();
+                        lastIsConnected=wifiIsConnected;
                         try {
                             Thread.sleep(2000);
                         } catch (InterruptedException e) {
@@ -222,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
         String application = getResources().getString(R.string.app_name).replace(":","");
         return name+":"+application+":"+ip+":"+port;
     }
-
 
 
 

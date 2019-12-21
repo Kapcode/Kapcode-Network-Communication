@@ -45,9 +45,22 @@ public class WifiScanner {
     //SYNC LISTS
     private synchronized Object accessIdentifiedServerList(String serverName, String ip, int port, int action,WifiEventHandler eventHandler,WifiClient client){
         //TODO wrap with an object? create object class to handle this instead of using an object[]
+        //contains is called the most.
+        if(action == CONTAINS){
+            //loop over list
+            //check if contains ip and port
+            for(Object[] arr: identifiedServersList){
+                if(arr[1].equals(ip) && arr[2].equals(port)){
+                    return true;
+                }
+            }
+            return false;
+        }
+
         int startSize = identifiedServersList.size();
         Object[] server = new Object[]{serverName,ip,port};
         switch (action){
+
             case ADD:
                 break;
             case ADD_IF_NOT_CONTAINS:
@@ -83,18 +96,7 @@ public class WifiScanner {
                 ArrayList<Object[]> listCopy = new ArrayList<>();
                 listCopy.addAll(identifiedServersList);
                 return listCopy;
-            case CONTAINS:
-                //loop over list
-                //check if contains ip and port
-                for(Object[] arr: identifiedServersList){
-                    //0 = name
-                    //1 = ip
-                    //2 = port
-                    if(arr[1].equals(ip) && arr[2].equals(port)){
-                        return true;
-                    }
-                }
-                return false;
+
 
 
 
@@ -109,7 +111,7 @@ public class WifiScanner {
         accessIdentifiedServerList("",ip,port,REMOVE,null,null);
     }
     public boolean identifiedServersListContains(String ip,int port){
-        return (boolean)accessIdentifiedServerList("",ip,port,CONTAINS,null,null);
+        return (boolean)accessIdentifiedServerList(null,ip,port,CONTAINS,null,null);
     }
 
     public void clearIdentifiedServersList(){

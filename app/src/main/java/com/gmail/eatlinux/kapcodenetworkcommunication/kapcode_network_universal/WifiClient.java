@@ -42,10 +42,7 @@ public class WifiClient {
         socket = new Socket();
         this.timeout = timeout;
 
-        if(ping){
-            // do nothing, must run startHandshake after creating this object to ping
-
-        }else{//runs in new Thread - handshakeThread if not a ping
+        if(!ping){//runs in new Thread - handshakeThread if not a ping
             handshakeThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -67,6 +64,14 @@ public class WifiClient {
 
     public void startHandshake(){
                 //try to connect to server
+        connectionOpen.set(false);
+        serverName=null;
+
+
+        if(socket.isClosed()){
+            socket=new Socket();
+        }
+
                 try {
                     socket.connect(new InetSocketAddress(ip,port),timeout);
                     eventHandler.clientConnectionMade(thisClient);
@@ -178,17 +183,19 @@ public class WifiClient {
     //disconnect end network related loops, close socket, notify
     public void disconnect(Exception exception){
         //don't run if already disconnected, or disconnecting
-        if(connectionOpen.get())try {
+        try {
             //end all loops
-            connectionOpen.set(false);
+
             //close socket
-            socket.close();
+            if(socket!=null)socket.close();
+            //socket=null;
             //send to event handler
-            eventHandler.clientDisconnected(this,new Exception[]{exception});
-        } catch (IOException e) {
-            System.err.println("serverConnection error disconnect method");
-            eventHandler.clientDisconnected(this,new Exception[]{e,exception});
+            if(connectionOpen.get())eventHandler.clientDisconnected(this,new Exception[]{exception});
+        } catch (IOException | NullPointerException e) {
+            //todo System.err.println("serverConnection error disconnect method");
+            if(connectionOpen.get()) eventHandler.clientDisconnected(this,new Exception[]{e,exception});
         }
+        connectionOpen.set(false);
     }
 
 
