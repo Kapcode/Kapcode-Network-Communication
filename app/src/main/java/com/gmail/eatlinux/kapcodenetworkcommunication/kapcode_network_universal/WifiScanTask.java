@@ -1,5 +1,7 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal;
 
+import java.net.InetSocketAddress;
+
 public class WifiScanTask implements Runnable{
     //a task that looks for a server on a given ip:port
     //on find, adds to scanner.identifiedServersList, then in turn to UI
@@ -51,20 +53,31 @@ public class WifiScanTask implements Runnable{
             client.port=port;
             client.systemName=name;
             client.application=application;
+            client.address=new InetSocketAddress(ip,port);
         }
 
         client.startHandshake();
 
         if (client.serverName != null) {
             //notified only if list does not contain this ip...
-            scanner.addIdentifiedServerToList(client.serverName, client.ip, client.port, eventHandler, client);
+
+            //todo this line
+            //scanner.addIdentifiedServerToList(client.serverName, client.ip, client.port, eventHandler, client);
+            scanner.addIdentifiedServerToMap(client.serverName,client.ip,client.port,eventHandler,client);
 
         } else {
             //connection failed...
             //remove from list
-            if(scanner.identifiedServersListContains(client.ip,client.port)){
+
+            //todo this block
+            //if(scanner.identifiedServersListContains(client.ip,client.port)){
+                //eventHandler.scannerLostServer(client.ip,client.port);
+                //scanner.removeIdentifiedServerFromListByAddress(client.ip, client.port);
+            //}
+
+            if(scanner.identifiedServersMapContains(client.ip)){
                 eventHandler.scannerLostServer(client.ip,client.port);
-                scanner.removeIdentifiedServerFromListByAddress(client.ip, client.port);
+                scanner.removeIdentifiedServerFromMapByAddress(client.ip);
             }
 
         }

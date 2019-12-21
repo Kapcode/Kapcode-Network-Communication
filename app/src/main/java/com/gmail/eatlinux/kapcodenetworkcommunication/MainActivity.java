@@ -102,7 +102,8 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy(){
         //must clear list in memory, because the UI list will be cleared by super.onDestroy.
         isVisible.set(false);
-        wifiScanner.clearIdentifiedServersList();
+        //wifiScanner.clearIdentifiedServersList();
+        wifiScanner.clearIdentifiedServersMap(eventHandler);
         super.onDestroy();
     }
 
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 if (wifiClient == null) {
                     //pause scanner
                     wifiScanner.goal.set(WifiScanner.PAUSE);
-                    wifiClient = new WifiClient(ip, port, 3000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
+                    wifiClient = new WifiClient(ip, port, 5000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                 }
 
             }
@@ -194,12 +195,13 @@ public class MainActivity extends AppCompatActivity {
                             //if just disconnected, pause scanner, clear list
                             if(wifiScanner!=null){
                                 wifiScanner.goal.set(WifiScanner.PAUSE);
-                                wifiScanner.clearIdentifiedServersList();
+                                //wifiScanner.clearIdentifiedServersList();
+                                wifiScanner.clearIdentifiedServersMap(eventHandler);
                             }
                         }
                         lastIsConnected=wifiIsConnected;
                         try {
-                            Thread.sleep(2000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

@@ -2,6 +2,7 @@ package com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,17 +24,17 @@ public class WifiScanner {
     //only referenced right before starting execution of runnable's. changes to this during will result in the next run reflecting this change.
     private volatile String deviceAddress;
     ArrayList<WifiScanTask> taskList;
-    private List<Object[]> identifiedServersList;//Object[3] String serverName,String ip, int port
+    //private List<Object[]> identifiedServersList;//Object[3] String serverName,String ip, int port
 
     public String getDeviceAddress(){
         //get without setting.
-        return accessDeviceAddress("");
+        return accessDeviceAddress(null);
     }
     public void setDeviceAddress(String address_deviceName_application_ip_port){
         accessDeviceAddress(address_deviceName_application_ip_port);
     }
     private synchronized String accessDeviceAddress(String address_deviceName_application_ip_port){
-        if(address_deviceName_application_ip_port.length()>2){
+        if(address_deviceName_application_ip_port!=null){
             deviceAddress=address_deviceName_application_ip_port;
         }
         return deviceAddress;
@@ -41,9 +42,63 @@ public class WifiScanner {
 
 
 
+    //key is ip
+    //value is {port,name}
+    private volatile HashMap<String,Object[]> identifiedServersMap = new HashMap<>(10);
+    private Object accessIdentifiedServersMap(int action,String key,Object[] value,WifiClient client,WifiEventHandler eventHandler){
+        if(action == CONTAINS )return identifiedServersMap.containsKey(key);
+        switch (action){
+            case ADD_IF_NOT_CONTAINS:
+                if(!identifiedServersMap.containsKey(key)){
+                    identifiedServersMap.put(key,value);
+                    eventHandler.scannerFoundServer(client);
+                }
+                break;
+            case REMOVE:
+                identifiedServersMap.remove(key);
+                break;
+            case CLEAR:
+                for(String temp_key: identifiedServersMap.keySet()){
+                    eventHandler.scannerLostServer(temp_key,(int)identifiedServersMap.get(temp_key)[0]);
+                }
+                identifiedServersMap.clear();
+            case COPY:
+                return identifiedServersMap.clone();
+
+        }
+
+        return identifiedServersMap.size();
+
+
+    }
+
+    public void addIdentifiedServerToMap(String serverName,String ip,int port,WifiEventHandler eventHandler,WifiClient client){
+        accessIdentifiedServersMap(ADD_IF_NOT_CONTAINS,ip,new Object[]{port,serverName},client,eventHandler);
+    }
+    public void removeIdentifiedServerFromMapByAddress(String ip){
+        accessIdentifiedServersMap(REMOVE,ip,null,null,null);
+    }
+    //todo
+    public boolean identifiedServersMapContains(String ip){
+        return (boolean)accessIdentifiedServersMap(CONTAINS,ip,null,null,null);
+    }
+
+    public void clearIdentifiedServersMap(WifiEventHandler eventHandler){
+        accessIdentifiedServersMap(CLEAR,null,null,null,eventHandler);
+    }
+    public int getIdentifiedServersMapSize(){
+        return (int) accessIdentifiedServersMap(GET_SIZE,null,null,null,null);
+    }
+
+
+
+
+
+
+
 
     //SYNC LISTS
-    private synchronized Object accessIdentifiedServerList(String serverName, String ip, int port, int action,WifiEventHandler eventHandler,WifiClient client){
+    /*private synchronized Object accessIdentifiedServerList(String serverName, String ip, int port, int action,WifiEventHandler eventHandler,WifiClient client){
         //TODO wrap with an object? create object class to handle this instead of using an object[]
         //contains is called the most.
         if(action == CONTAINS){
@@ -119,7 +174,7 @@ public class WifiScanner {
     }
     public void getIdentifiedServersListSize(){
         accessIdentifiedServerList(null,null,0,GET_SIZE,null,null);
-    }
+    }*/
 
 
 
@@ -140,7 +195,9 @@ public class WifiScanner {
         this.threadCount=threadCount;
         this.connectionTimeout = connectionTimeout;
         if(tasksCompleted == null)tasksCompleted=new AtomicInteger(0);
-        if(identifiedServersList==null)identifiedServersList = (List<Object[]>) Collections.synchronizedList(new ArrayList<Object[]>());//Object[3] String serverName,String ip, int port
+        //if(identifiedServersList==null)identifiedServersList = (List<Object[]>) Collections.synchronizedList(new ArrayList<Object[]>());//Object[3] String serverName,String ip, int port
+        //if(identifiedServersMap==null)identifiedServersMap=new HashMap<>();
+                //map is created in global declaration
         //don't block, finish creating Object, use thread.join if you want to block until this loop exits.
         managerThread=new Thread(new Runnable() {
             @Override

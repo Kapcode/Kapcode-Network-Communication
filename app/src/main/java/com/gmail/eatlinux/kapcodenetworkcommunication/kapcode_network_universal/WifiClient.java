@@ -29,6 +29,7 @@ public class WifiClient {
     public int port;
     Thread handshakeThread;
     int timeout;
+    InetSocketAddress address;
 
 
     public WifiClient(String ip,int port,int timeout,String systemName,String application,boolean ping,WifiEventHandler eventHandler) {
@@ -41,6 +42,8 @@ public class WifiClient {
         this.port = port;
         socket = new Socket();
         this.timeout = timeout;
+        address = new InetSocketAddress(ip,port);
+
 
         if(!ping){//runs in new Thread - handshakeThread if not a ping
             handshakeThread = new Thread(new Runnable() {
@@ -63,7 +66,7 @@ public class WifiClient {
 
 
     public void startHandshake(){
-                //try to connect to server
+        //try to connect to server
         connectionOpen.set(false);
         serverName=null;
 
@@ -72,62 +75,62 @@ public class WifiClient {
             socket=new Socket();
         }
 
-                try {
-                    socket.connect(new InetSocketAddress(ip,port),timeout);
-                    eventHandler.clientConnectionMade(thisClient);
-                    connectionOpen.set(true);
-                } catch (IOException e) {
-                    //e.printStackTrace();
-                    //on fail, 'disconnect' and notify
-                    disconnect(e);//should not run because connection is closed
-                    eventHandler.clientFailedToConnect(thisClient,e);
+        try {
+            socket.connect(address,timeout);//don't recreate every time
+            eventHandler.clientConnectionMade(thisClient);
+            connectionOpen.set(true);
+        } catch (IOException e) {
+            //on fail, 'disconnect' and notify
+            disconnect(e);//should not run because connection is closed
+            eventHandler.clientFailedToConnect(thisClient,e);
 
-                }
-                //if fail... skip all of the following
+        }
+        //if fail... skip all of the following
+        //create object streams
+        if(connectionOpen.get())try {
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            disconnect(e);
+        }
+        if(connectionOpen.get())try {
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            disconnect(e);
+        }
+        //create a message
 
-                //create object streams
-                if(connectionOpen.get())try {
-                    objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                } catch (IOException e) {
-                    disconnect(e);
+        //server will read this message, then send server info, if it sends it, application is same.
+        if(connectionOpen.get()){
+            Message message = new Message();
+            message.ping=ping;
+            message.systemName=systemName;
+            message.application=application;
+            //send the handshake message
+            try {
+                objectOutputStream.writeObject(message);
+                eventHandler.clientHandshakeMessageSent(thisClient);
+            } catch (IOException | NullPointerException e) {
+                disconnect(e);
+            }
+            //try to read a handshake message from server (might not ever come), connection might be terminated server side if application is not the same.
+            if(connectionOpen.get())try {
+                message=(Message)objectInputStream.readObject();
+                eventHandler.clientHandshakeMessageRead(thisClient);
+                serverName=message.systemName;
+                eventHandler.clientHandshakeSuccessful(thisClient);
+                if(ping){
+                    disconnect(null);
+                }else{
+                    //start loops
+                    socket.setSoTimeout(keepAliveDelay+keepAliveBuffer);
+                    if(connectionOpen.get())startReadLoop();
+                    if(connectionOpen.get())startKeepAliveLoop();
                 }
-                if(connectionOpen.get())try {
-                    objectInputStream = new ObjectInputStream(socket.getInputStream());
-                } catch (IOException e) {
-                    disconnect(e);
-                }
-                //create a message
-                Message message = new Message();
-                //server will read this message, then send server info, if it sends it, application is same.
-                if(connectionOpen.get()){
-                    message.ping=ping;
-                    message.systemName=systemName;
-                    message.application=application;
-                }
-                //send the handshake message
-                if(connectionOpen.get())try {
-                    objectOutputStream.writeObject(message);
-                    eventHandler.clientHandshakeMessageSent(thisClient);
-                } catch (IOException | NullPointerException e) {
-                    disconnect(e);
-                }
-                //try to read a handshake message from server (might not ever come), connection might be terminated server side if application is not the same.
-                if(connectionOpen.get())try {
-                    message=(Message)objectInputStream.readObject();
-                    eventHandler.clientHandshakeMessageRead(thisClient);
-                    serverName=message.systemName;
-                    eventHandler.clientHandshakeSuccessful(thisClient);
-                    if(ping){
-                        disconnect(null);
-                    }else{
-                        //start loops
-                        socket.setSoTimeout(keepAliveDelay+keepAliveBuffer);
-                        if(connectionOpen.get())startReadLoop();
-                        if(connectionOpen.get())startKeepAliveLoop();
-                    }
-                }catch (ClassNotFoundException | NullPointerException | IOException e) {
-                    disconnect(e);
-                }
+            }catch (ClassNotFoundException | NullPointerException | IOException e) {
+                disconnect(e);
+            }
+        }
+
 
     }
 
