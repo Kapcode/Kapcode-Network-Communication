@@ -3,9 +3,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    android:background="@color/backgroundDark"
+    android:visibility="gone"
+    tools:context=".MainActivity">
 
     <include
         android:id="@+id/server_list_include"
@@ -20,9 +23,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/textBackgroundDark"
         android:minHeight="65dp"
         android:onClick="connectButtonOnClick"
-        android:text="@string/connect_button_title" />
+        android:text="@string/connect_button_title"
+        android:textColor="@color/textDark" />
 
     <include
         android:id="@+id/custom_ip_layout_include"

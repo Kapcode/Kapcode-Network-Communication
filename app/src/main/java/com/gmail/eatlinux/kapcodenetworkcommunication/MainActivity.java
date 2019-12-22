@@ -9,10 +9,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.Formatter;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.gmail.eatlinux.kapcodenetworkcommunication.kapcode_network_universal.WifiClient;
@@ -36,6 +39,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        //fade in rootLayout
+        RelativeLayout rootLayout = findViewById(R.id.root_layout);
+        if(rootLayout.getVisibility() == View.GONE){
+            //fade in
+            rootLayout.setAlpha(0);
+            rootLayout.setVisibility(View.VISIBLE);
+            rootLayout.animate().alpha(1.0f).setDuration(1000);
+        }
+
         kapcodeNetworkOnCreate();
         /*
         todo when creating new app:
@@ -78,20 +92,6 @@ public class MainActivity extends AppCompatActivity {
         wifiScanner.clearIdentifiedServersMap(eventHandler);
         super.onDestroy();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public synchronized void startScan(){
         //if paused, un-pause
         if (wifiClient == null) {
@@ -112,72 +112,112 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
-
     }
-
-
-
-
-    public void connectButtonOnClick(View view) {
+    public void connectButtonOnClick(final View view) {
         view.setEnabled(false);
-        //get selected radio button, parse info, connect...
-        RadioButton rb = findViewById(((RadioGroup) findViewById(R.id.server_list_radiogroup)).getCheckedRadioButtonId());
-        if (rb == null) {
-            view.setEnabled(true);
-        } else {
-            if (rb == findViewById(R.id.custom_ip_radio_button)) {
-                if (customIP_Layout.getVisibility() == View.VISIBLE) {
-                    //try to connect with user input
-                    String name = ((EditText) findViewById(R.id.user_input_server_name)).getText().toString();
-                    String ip = ((EditText) findViewById(R.id.user_input_server_ip)).getText().toString();
-                    String port = ((EditText) findViewById(R.id.user_input_server_port)).getText().toString();
-                    if (name != null & !name.isEmpty() & ip != null & !ip.isEmpty() & port != null & !port.isEmpty()) {
-                        //try to connect
+        AlphaAnimation alphaAnimation = buttonAnimation(view);
+        //start animation, wait until done, then act.
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                //TODO: Run when animation start
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                //TODO: Run when animation end
+                System.out.println("END");
+
+                //get selected radio button, parse info, connect...
+                RadioButton rb = findViewById(((RadioGroup) findViewById(R.id.server_list_radiogroup)).getCheckedRadioButtonId());
+                if (rb == null) {
+                    view.setEnabled(true);
+                } else {
+                    if (rb == findViewById(R.id.custom_ip_radio_button)) {
+                        if (customIP_Layout.getVisibility() == View.VISIBLE) {
+                            //try to connect with user input
+                            String name = ((EditText) findViewById(R.id.user_input_server_name)).getText().toString();
+                            String ip = ((EditText) findViewById(R.id.user_input_server_ip)).getText().toString();
+                            String port = ((EditText) findViewById(R.id.user_input_server_port)).getText().toString();
+                            if (name != null & !name.isEmpty() & ip != null & !ip.isEmpty() & port != null & !port.isEmpty()) {
+                                //try to connect
+                                if (wifiClient == null) {
+                                    //pause scanner
+                                    wifiScanner.goal.set(WifiScanner.PAUSE);
+                                    wifiClient = new WifiClient(ip, Integer.parseInt(port), 10000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
+                                } else {
+                                    view.setEnabled(true);
+                                    toggleCustomIP_Layout();
+                                }
+                            }
+
+                        } else {
+                            view.setEnabled(true);
+                            toggleCustomIP_Layout();
+                        }
+
+
+                    } else if (rb == findViewById(R.id.usb_radio_button)) {
+                        connectButton.setEnabled(true);
+                        //todo make usb information appear
+                    } else if (rb.getText().toString().contains(":" + port)) {
+                        //connect to selected server
+                        String[] textParts = rb.getText().toString().split(":");
+                        //String serverName = textParts[0];
+                        String ip = textParts[1];
+                        //port is in array too, but above if statement needs it to be this.port
+                        System.out.println(rb.getText().toString());
                         if (wifiClient == null) {
                             //pause scanner
                             wifiScanner.goal.set(WifiScanner.PAUSE);
-                            wifiClient = new WifiClient(ip, Integer.parseInt(port), 10000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
-                        } else {
-                            view.setEnabled(true);
-                            toggleCustomIP_Layout(null);
+                            wifiClient = new WifiClient(ip, port, 5000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                         }
+
                     }
-
-                } else {
-                    view.setEnabled(true);
-                    toggleCustomIP_Layout(null);
                 }
-
-
-            } else if (rb == findViewById(R.id.usb_radio_button)) {
-                connectButton.setEnabled(true);
-                //todo make usb information appear
-            } else if (rb.getText().toString().contains(":" + port)) {
-                //connect to selected server
-                String[] textParts = rb.getText().toString().split(":");
-                //String serverName = textParts[0];
-                String ip = textParts[1];
-                //port is in array too, but above if statement needs it to be this.port
-                System.out.println(rb.getText().toString());
-                if (wifiClient == null) {
-                    //pause scanner
-                    wifiScanner.goal.set(WifiScanner.PAUSE);
-                    wifiClient = new WifiClient(ip, port, 5000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
-                }
-
             }
-        }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                //TODO: Run when animation repeat
+            }
+        });
+        view.startAnimation(alphaAnimation);
+
+
 
     }
 
 
-    public void toggleCustomIP_Layout(View view){
+    public void toggleCustomIP_Layout(){
         if(customIP_Layout.getVisibility() == View.VISIBLE){
             customIP_Layout.setVisibility(View.GONE);
         }else{
             customIP_Layout.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void backButtonOnClick(final View view){
+        view.setEnabled(false);
+        AlphaAnimation alphaAnimation = MainActivity.buttonAnimation(view);
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                toggleCustomIP_Layout();
+                view.setEnabled(true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        view.startAnimation(alphaAnimation);
     }
 
 
@@ -226,5 +266,15 @@ public class MainActivity extends AppCompatActivity {
         String name =android.os.Build.MODEL.replace(":","");
         String application = getResources().getString(R.string.app_name).replace(":","");
         return name+":"+application+":"+ip+":"+port;
+    }
+
+    public static AlphaAnimation buttonAnimation(View button){
+        //start animation, wait until done, then act.
+        AlphaAnimation alphaAnimation = new AlphaAnimation(1.0f, 0.5f);
+        alphaAnimation.setDuration(50);
+        alphaAnimation.setRepeatCount(1);
+        alphaAnimation.setRepeatMode(Animation.REVERSE);
+        return alphaAnimation;
+
     }
 }

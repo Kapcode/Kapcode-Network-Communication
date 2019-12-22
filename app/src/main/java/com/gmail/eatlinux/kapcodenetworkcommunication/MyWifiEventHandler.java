@@ -32,6 +32,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
             int port = client.port;
             RadioButton rb = new RadioButton(serverListRadioGroup.getContext());
             rb.setText(serverName+":"+ip+":"+port);
+            rb.setTextColor(serverListRadioGroup.getResources().getColor(R.color.textDark));//todo make adhere to current theme.
             serverListRadioGroup.addView(rb);
         }});
     }

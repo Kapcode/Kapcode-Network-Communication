@@ -3,6 +3,7 @@
     android:id="@+id/server_list_layout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/backgroundDark"
     android:orientation="vertical">
 
     <TextView
@@ -11,19 +12,23 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="@string/server_list_layout_title"
+        android:textColor="@color/textDark"
         android:textSize="24sp"
         android:textStyle="bold" />
 
     <ProgressBar
         android:id="@+id/sacnnerProgressBar"
-        style="?android:attr/progressBarStyle"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:padding="10dp" />
 
     <ScrollView
         android:id="@+id/server_list_scroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/backgroundDark">
 
         <RadioGroup
             android:id="@+id/server_list_radiogroup"
@@ -34,13 +39,15 @@
                 android:id="@+id/custom_ip_radio_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/custom_ip_radio_button" />
+                android:text="@string/custom_ip_radio_button"
+                android:textColor="@color/textDark" />
 
             <RadioButton
                 android:id="@+id/usb_radio_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/usb_radio_button" />
+                android:text="@string/usb_radio_button"
+                android:textColor="@color/textDark" />
         </RadioGroup>
 
     </ScrollView>

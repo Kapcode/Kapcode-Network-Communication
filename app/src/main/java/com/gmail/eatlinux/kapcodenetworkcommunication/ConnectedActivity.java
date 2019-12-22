@@ -3,6 +3,8 @@ package com.gmail.eatlinux.kapcodenetworkcommunication;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 
 public class ConnectedActivity extends AppCompatActivity {
     boolean disconnectCalled = false;
@@ -15,7 +17,7 @@ public class ConnectedActivity extends AppCompatActivity {
     
     @Override
     public void onPause(){
-        disconnect(null);
+        disconnect();
         super.onPause();
     }
 
@@ -28,12 +30,34 @@ public class ConnectedActivity extends AppCompatActivity {
 
     @Override
     public void onStop(){
-        disconnect(null);
+        disconnect();
         super.onStop();
     }
 
 
-    public void disconnect(View view){
+    public void disconnect(final View view){
+        view.setEnabled(false);
+        AlphaAnimation alphaAnimation = MainActivity.buttonAnimation(view);
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                disconnect();
+                view.setEnabled(true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        view.startAnimation(alphaAnimation);
+    }
+    public void disconnect(){
         if(!disconnectCalled){
             disconnectCalled=true;
             if(MainActivity.wifiClient!=null){
@@ -43,6 +67,5 @@ public class ConnectedActivity extends AppCompatActivity {
             }
             //event handler should handle the activity switch.
         }
-
     }
 }
