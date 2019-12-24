@@ -93,7 +93,7 @@ public class MyWifiEventHandler extends WifiEventHandler {
             @Override
             public void run() {
                 MainActivity.wifiClient=null;
-                MainActivity.connectButton.setEnabled(true);
+                //activity.findViewById(R.id.connectButton).setEnabled(true);
                 if(activity!=null)activity.finish();
                 MainActivity.wifiScanner.goal.set(WifiScanner.START);
 
