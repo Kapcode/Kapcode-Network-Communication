@@ -1,17 +1,14 @@
 package com.gmail.eatlinux.kapcodenetworkcommunication;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.Formatter;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -35,6 +32,53 @@ public class MainActivity extends AppCompatActivity {
     public static WifiScanner wifiScanner;
     static volatile AtomicBoolean startScanWhenWifiConnects,isVisible;
     static Thread wifiWatcherThread =null;
+    static Thread userInteractionWatcherThread =null;
+    static volatile long timeUserLastInteracted = 0;
+    static final long userInteractionTimeout = 60000;//will be considered inactive after 60 seconds
+    static final long userInteractionWatcherSleepTime = 10000;//check every 10 seconds
+    @Override
+    public void onUserInteraction(){
+        timeUserLastInteracted = System.currentTimeMillis();
+        //un-pause scanner
+        if(isVisible.get()){
+            wifiScanner.goal.set(WifiScanner.START);
+            findViewById(R.id.sacnnerProgressBar).setVisibility(View.VISIBLE);
+            findViewById(R.id.inactiveText).setVisibility(View.GONE);
+        }
+
+    }
+    public void checkForUserInactivity(){
+        if(userInteractionWatcherThread==null){
+            userInteractionWatcherThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true){
+                        try {
+                            Thread.sleep(userInteractionWatcherSleepTime);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if(isVisible.get()&&(System.currentTimeMillis() - timeUserLastInteracted) > userInteractionTimeout){
+                            System.out.println("IN ACTIVE");
+                            //pause scanner
+                            wifiScanner.goal.set(WifiScanner.PAUSE);
+                            if(findViewById(R.id.inactiveText).getVisibility() == View.GONE){
+                                findViewById(R.id.sacnnerProgressBar).setVisibility(View.INVISIBLE);
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        findViewById(R.id.inactiveText).setVisibility(View.VISIBLE);
+                                    }
+                                });
+                            }
+
+                        }
+                    }
+                }
+            });
+            userInteractionWatcherThread.start();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         if(isVisible==null)isVisible=new AtomicBoolean(true);
         setButtonEffect(findViewById(R.id.backButton1));
         setButtonEffect(findViewById(R.id.connectButton));
+        checkForUserInactivity();
     }
 
     public void onResume(){
@@ -74,11 +119,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.connectButton).setEnabled(true);
         startScan();
         startWifiWatcher();
+        onUserInteraction();
         super.onResume();
     }
     public void onPause(){
         isVisible.set(false);
         wifiScanner.goal.set(WifiScanner.PAUSE);
+        findViewById(R.id.sacnnerProgressBar).setVisibility(View.INVISIBLE);
         super.onPause();
     }
     @Override
@@ -91,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         if (wifiClient == null) { //if paused, un-pause
             if (wifiScanner != null) {
                 wifiScanner.goal.set(WifiScanner.START);
+                findViewById(R.id.sacnnerProgressBar).setVisibility(View.VISIBLE);
             } else {//if null, create and start scan.
                 boolean wifiIsConnected = false;
                 try{
@@ -125,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         if (wifiClient == null) {
                             //pause scanner
                             wifiScanner.goal.set(WifiScanner.PAUSE);
+                            findViewById(R.id.sacnnerProgressBar).setVisibility(View.INVISIBLE);
                             wifiClient = new WifiClient(ip, Integer.parseInt(port), 10000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                         } else {
                             view.setEnabled(true);
@@ -151,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 if (wifiClient == null) {
                     //pause scanner
                     wifiScanner.goal.set(WifiScanner.PAUSE);
+                    findViewById(R.id.sacnnerProgressBar).setVisibility(View.INVISIBLE);
                     wifiClient = new WifiClient(ip, port, 5000, android.os.Build.MODEL, getResources().getString(R.string.app_name), false, eventHandler);
                 }
 
@@ -177,6 +227,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+    //user inactivity check is in this thread.
     //watches wifi connectivity state.
     //if was connected, and just disconnected -> pause scanner, clear the IdentifiedServersList
     //if was disconnected, and just connected -> setDeviceAddress, and un-pause scanner
@@ -199,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
                             //if just disconnected, pause scanner, clear list
                             if(wifiScanner!=null){
                                 wifiScanner.goal.set(WifiScanner.PAUSE);
+                                findViewById(R.id.sacnnerProgressBar).setVisibility(View.INVISIBLE);
                                 wifiScanner.clearIdentifiedServersMap(eventHandler);
                             }
                         }
