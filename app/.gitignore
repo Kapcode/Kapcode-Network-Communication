@@ -1,1 +1,16 @@
 /build
+Kapcode Network Communication.iml
+local.properties
+app/app.iml
+app/src/androidTest
+app/src/test
+app/libs
+app/build.gradle
+app/proguard-rules.pro
+app/build
+gradle
+build.gradle
+gradle.properties
+gradlew
+gradlew.bat
+settings.gradle
